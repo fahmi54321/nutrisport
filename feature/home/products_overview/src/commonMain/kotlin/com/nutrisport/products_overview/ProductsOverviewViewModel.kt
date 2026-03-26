@@ -12,8 +12,8 @@ class ProductsOverviewViewModel(
     private val productRepository: ProductRepository
 ) : ViewModel() {
     val products = combine(
-        productRepository.readNewProducts(),
-        productRepository.readDiscountedProducts()
+        productRepository.readNewProductsFlow(),
+        productRepository.readDiscountedProductsFlow()
     ) { new, discounted ->
         when {
             new.isSuccess() && discounted.isSuccess() -> {

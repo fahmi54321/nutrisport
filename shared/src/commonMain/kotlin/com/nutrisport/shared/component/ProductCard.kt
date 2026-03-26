@@ -64,7 +64,7 @@ fun ProductCard(
             .clickable { onClick(product.id) }
     ) {
         AsyncImage(
-            modifier = modifier
+            modifier = Modifier
                 .width(120.dp)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(size = 12.dp))

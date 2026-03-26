@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProductRepository {
     fun getCurrentUserId(): String?
-    fun readDiscountedProducts(): Flow<RequestState<List<Product>>>
-    fun readNewProducts(): Flow<RequestState<List<Product>>>
+    fun readDiscountedProductsFlow(): Flow<RequestState<List<Product>>>
+    fun readNewProductsFlow(): Flow<RequestState<List<Product>>>
+    fun readProductByIdFlow(id: String): Flow<RequestState<Product>>
 }
