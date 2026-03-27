@@ -79,7 +79,7 @@ allow read, write: if true;
 
 ---
 
-## 🍏 Setup iOS (jika build gagal)
+## Setup iOS (jika build gagal)
 
 Jika iOS error seperti:
 
