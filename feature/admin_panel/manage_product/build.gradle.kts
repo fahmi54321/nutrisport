@@ -65,7 +65,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.manage_product"
+    namespace = "com.nutrisport.manage_product"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

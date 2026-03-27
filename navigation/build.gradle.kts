@@ -42,6 +42,7 @@ kotlin {
 
             implementation(project(path = ":feature:auth"))
             implementation(project(path = ":feature:home"))
+            implementation(project(path = ":feature:home:categories:category_search"))
             implementation(project(path = ":feature:details"))
             implementation(project(path = ":feature:profile"))
             implementation(project(path = ":feature:admin_panel"))
@@ -55,7 +56,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.auth"
+    namespace = "com.nutrisport.auth"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

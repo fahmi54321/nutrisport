@@ -147,14 +147,14 @@ class CustomerRepositoryImpl : CustomerRepository {
     ) {
         try {
             val currentUserId = getUserId()
-            if(currentUserId != null){
+            if (currentUserId != null) {
                 val database = Firebase.firestore
                 val customerCollection = database.collection(collectionPath = "customer")
 
                 val existingCustomer = customerCollection
                     .document(currentUserId)
                     .get()
-                if(existingCustomer.exists){
+                if (existingCustomer.exists) {
                     val existingCart = existingCustomer.get<List<CartItem>>("cartItem")
                     val updatedCart = existingCart + cartItem
                     customerCollection
@@ -164,13 +164,86 @@ class CustomerRepositoryImpl : CustomerRepository {
                             merge = true,
                         )
                     onSuccess()
-                }else{
+                } else {
                     onError("Select customer does not exists")
                 }
-            }else{
+            } else {
                 onError("User is not available")
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
+            onError("Error while adding a product to cart: ${e.message}")
+        }
+    }
+
+    override suspend fun updateCartItemQuantity(
+        id: String,
+        quantity: Int,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val currentUserId = getUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    val existingCart = existingCustomer.get<List<CartItem>>("cartItem")
+                    val updatedCart = existingCart.map { cartItem ->
+                        if (cartItem.id == id) {
+                            cartItem.copy(quantity = quantity)
+                        } else cartItem
+                    }
+                    customerCollection
+                        .document(currentUserId)
+                        .update(
+                            data = mapOf("cartItem" to updatedCart),
+                        )
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exists")
+                }
+            } else {
+                onError("User is not available")
+            }
+        } catch (e: Exception) {
+            onError("Error while adding a product to cart: ${e.message}")
+        }
+    }
+
+    override suspend fun deleteCartItem(
+        id: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val currentUserId = getUserId()
+            if (currentUserId != null) {
+                val database = Firebase.firestore
+                val customerCollection = database.collection(collectionPath = "customer")
+
+                val existingCustomer = customerCollection
+                    .document(currentUserId)
+                    .get()
+                if (existingCustomer.exists) {
+                    val existingCart = existingCustomer.get<List<CartItem>>("cartItem")
+                    val updatedCart = existingCart.filterNot { it.id == id }
+                    customerCollection
+                        .document(currentUserId)
+                        .update(
+                            data = mapOf("cartItem" to updatedCart),
+                        )
+                    onSuccess()
+                } else {
+                    onError("Select customer does not exists")
+                }
+            } else {
+                onError("User is not available")
+            }
+        } catch (e: Exception) {
             onError("Error while adding a product to cart: ${e.message}")
         }
     }

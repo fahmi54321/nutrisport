@@ -1,6 +1,9 @@
-package com.nutrisport.admin_panel
+package com.nutrisport.category_search
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -29,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nutrisport.shared.BebasNeueFont
 import com.nutrisport.shared.BorderIdle
-import com.nutrisport.shared.ButtonPrimary
 import com.nutrisport.shared.FontSize
 import com.nutrisport.shared.IconPrimary
 import com.nutrisport.shared.Resources
@@ -39,18 +40,20 @@ import com.nutrisport.shared.TextPrimary
 import com.nutrisport.shared.component.InfoCard
 import com.nutrisport.shared.component.LoadingCard
 import com.nutrisport.shared.component.ProductCard
+import com.nutrisport.shared.domain.ProductCategory
 import com.nutrisport.shared.util.DisplayResult
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminPanelScreen(
+fun CategorySearchScreen(
+    category: ProductCategory,
     navigateBack: () -> Unit,
-    navigateToManageProduct: (String?) -> Unit
+    navigateToDetails: (String) -> Unit,
 ) {
-    val viewModel = koinViewModel<AdminPanelViewModel>()
-    val products = viewModel.filteredProducts.collectAsState()
+    val viewModel = koinViewModel<CategorySearchViewModel>()
+    val filteredProducts by viewModel.filteredProducts.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     var searchBarVisible by mutableStateOf(false)
 
@@ -114,7 +117,7 @@ fun AdminPanelScreen(
                     TopAppBar(
                         title = {
                             Text(
-                                text = "Admin Panel",
+                                text = category.title,
                                 fontFamily = BebasNeueFont(),
                                 fontSize = FontSize.LARGE,
                                 color = TextPrimary,
@@ -156,38 +159,23 @@ fun AdminPanelScreen(
             }
 
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navigateToManageProduct(null)
-                },
-                containerColor = ButtonPrimary,
-                contentColor = IconPrimary,
-                content = {
-                    Icon(
-                        painter = painterResource(Resources.Icon.Plus),
-                        contentDescription = "Add icon"
-                    )
-                }
-            )
-        }
     ) { padding ->
-        products.value.DisplayResult(
+        filteredProducts.DisplayResult(
             modifier = Modifier
                 .padding(
                     top = padding.calculateTopPadding(),
-                    bottom = padding.calculateBottomPadding(),
+                    bottom = padding.calculateBottomPadding()
                 ),
             onLoading = {
                 LoadingCard(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
             },
-            onSuccess = { lastProducts ->
+            onSuccess = { categoryProducts ->
                 AnimatedContent(
-                    targetState = lastProducts
+                    targetState = categoryProducts
                 ) { products ->
-
                     if (products.isNotEmpty()) {
                         LazyColumn(
                             modifier = Modifier
@@ -196,15 +184,13 @@ fun AdminPanelScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(
-                                items = lastProducts,
-                                key = {
-                                    it.id
-                                }
+                                items = products,
+                                key = { it.id }
                             ) { product ->
                                 ProductCard(
                                     product = product,
                                     onClick = {
-                                        navigateToManageProduct(product.id)
+                                        navigateToDetails(product.id)
                                     }
                                 )
                             }
@@ -212,8 +198,8 @@ fun AdminPanelScreen(
                     } else {
                         InfoCard(
                             image = Resources.Image.Cat,
-                            title = "Oops!",
-                            subtitle = "Products not found"
+                            title = "Nothing here",
+                            subtitle = "We couldn't find any product",
                         )
                     }
                 }
@@ -224,7 +210,8 @@ fun AdminPanelScreen(
                     title = "Oops!",
                     subtitle = message,
                 )
-            }
+            },
+            transitionSpec = fadeIn() togetherWith fadeOut()
         )
     }
 }

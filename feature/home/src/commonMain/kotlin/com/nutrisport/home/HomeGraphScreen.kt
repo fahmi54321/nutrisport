@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nutrisport.cart.CartScreen
+import com.nutrisport.categories.CategoryScreen
 import com.nutrisport.home.component.BottomBar
 import com.nutrisport.home.component.CustomDrawer
 import com.nutrisport.home.domain.BottomBarDestination
@@ -68,13 +69,14 @@ fun HomeGraphScreen(
     navigateToProfile: () -> Unit,
     navigateToAdminPanel: () -> Unit,
     navigateToDetails: (String) -> Unit,
-){
+    navigateToCategoriesSearch: (String) -> Unit,
+) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState()
     val selectedDestination by remember {
         derivedStateOf {
             val route = currentRoute.value?.destination?.route.toString()
-            when{
+            when {
                 route.contains(BottomBarDestination.ProductsOverview.screen.toString()) -> BottomBarDestination.ProductsOverview
                 route.contains(BottomBarDestination.Cart.screen.toString()) -> BottomBarDestination.Cart
                 route.contains(BottomBarDestination.Categories.screen.toString()) -> BottomBarDestination.Categories
@@ -88,19 +90,19 @@ fun HomeGraphScreen(
 
     val offsetValue by remember { derivedStateOf { (screenWidth / 1.5).dp } }
     val animatedOffset by animateDpAsState(
-        targetValue = if(drawerState.isOpened()) offsetValue else 0.dp
+        targetValue = if (drawerState.isOpened()) offsetValue else 0.dp
     )
 
     val animatedBackground by animateColorAsState(
-        targetValue = if(drawerState.isOpened()) SurfaceLighter else Surface
+        targetValue = if (drawerState.isOpened()) SurfaceLighter else Surface
     )
 
     val animatedScale by animateFloatAsState(
-        targetValue = if(drawerState.isOpened()) 0.9f else 1f
+        targetValue = if (drawerState.isOpened()) 0.9f else 1f
     )
 
     val animatedRadius by animateDpAsState(
-        targetValue = if(drawerState.isOpened()) 20.dp else 0.dp
+        targetValue = if (drawerState.isOpened()) 20.dp else 0.dp
     )
 
     val viewModel = koinViewModel<HomeGraphViewModel>()
@@ -112,7 +114,7 @@ fun HomeGraphScreen(
             .fillMaxSize()
             .background(animatedBackground)
             .systemBarsPadding()
-    ){
+    ) {
         CustomDrawer(
             customer = customer,
             onProfileClick = navigateToProfile,
@@ -120,7 +122,7 @@ fun HomeGraphScreen(
             onSignOutClick = {
                 viewModel.signOut(
                     onSuccess = navigateToAuth,
-                    onError = {message ->
+                    onError = { message ->
                         messageBarState.addError(message)
                     }
                 )
@@ -151,7 +153,7 @@ fun HomeGraphScreen(
                         title = {
                             AnimatedContent(
                                 targetState = selectedDestination
-                            ){ destination ->
+                            ) { destination ->
                                 Text(
                                     text = destination.title,
                                     fontFamily = BebasNeueFont(),
@@ -163,25 +165,25 @@ fun HomeGraphScreen(
                         navigationIcon = {
                             AnimatedContent(
                                 targetState = drawerState
-                            ){ drawer->
-                                if(drawer.isOpened()){
+                            ) { drawer ->
+                                if (drawer.isOpened()) {
                                     IconButton(
                                         onClick = {
                                             drawerState = drawerState.oppsite()
                                         }
-                                    ){
+                                    ) {
                                         Icon(
                                             painter = painterResource(Resources.Icon.Close),
                                             contentDescription = "Close Icon",
                                             tint = IconPrimary,
                                         )
                                     }
-                                }else{
+                                } else {
                                     IconButton(
                                         onClick = {
                                             drawerState = drawerState.oppsite()
                                         }
-                                    ){
+                                    ) {
                                         Icon(
                                             painter = painterResource(Resources.Icon.Menu),
                                             contentDescription = "Menu Icon",
@@ -212,7 +214,7 @@ fun HomeGraphScreen(
                     messageBarState = messageBarState,
                     errorMaxLines = 2,
                     contentBackgroundColor = Surface,
-                ){
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -221,24 +223,31 @@ fun HomeGraphScreen(
                             modifier = Modifier.weight(1f),
                             navController = navController,
                             startDestination = Screen.ProductsOverview,
-                        ){
-                            composable<Screen.ProductsOverview>(){
+                        ) {
+                            composable<Screen.ProductsOverview>() {
                                 ProductsOverviewScreen(
                                     navigateToDetails
                                 )
                             }
-                            composable<Screen.Cart>(){}
-                            composable<Screen.Categories>(){}
+                            composable<Screen.Cart>() {
+                                CartScreen()
+                            }
+                            composable<Screen.Categories>() {
+                                CategoryScreen(
+                                    navigateToCategoriesSearch
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                         Box(
                             modifier = Modifier
                                 .padding(all = 12.dp)
-                        ){
+                        ) {
                             BottomBar(
+                                customer = customer,
                                 selected = selectedDestination,
-                                onSelect = {destination ->
-                                    navController.navigate(destination.screen){
+                                onSelect = { destination ->
+                                    navController.navigate(destination.screen) {
                                         launchSingleTop = true
                                         popUpTo<Screen.ProductsOverview> {
                                             saveState = true

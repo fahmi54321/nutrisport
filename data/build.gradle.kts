@@ -48,7 +48,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.data"
+    namespace = "com.nutrisport.data"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

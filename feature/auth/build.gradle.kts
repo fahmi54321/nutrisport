@@ -53,7 +53,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.auth"
+    namespace = "com.nutrisport.auth"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
